@@ -1,0 +1,67 @@
+
+# ---------- Initialize Simulation --------------------- 
+clear
+units       metal
+dimension   3
+boundary    p p s
+atom_style  atomic
+
+variable    T0 equal 50   # Tm  W=3695  Ti=1941
+variable    velT equal "v_T1 * 2"
+#variable    MDsteps equal 5000
+#variable    SEED equal 1
+
+
+# ---------- Create Atomistic Structure --------------------- 
+read_data   STRUC
+mass        * ${MASS} # W=183.84 Ti=47.867 Cu=63.546   # for some potentials (e.g., MEAM)
+
+variable    Lower1 equal "bound(all, zmin) + v_Lowerb"
+variable    Upper1 equal "bound(all, zmax) - v_Upperb"
+print       "${Lower1}" screen yes
+print       "${Upper1}" screen yes
+
+region      lowlayer block INF INF INF INF INF ${Lower1} units box
+group       lowlayer region lowlayer
+
+region      gbregion block INF INF INF INF ${Lower1} ${Upper1} units box
+group       gbregion region gbregion
+
+region      uplayer block INF INF INF INF ${Upper1} INF units box
+group       uplayer region uplayer
+
+
+# ---------- Define Interatomic Potential --------------------- 
+
+pair_style  ${STYLE}
+pair_coeff  ${COEFF}
+
+neighbor        1.0 bin
+neigh_modify    every 1 delay 1 check yes
+
+
+# ---------- MD simulation ---------------------
+# fix upper and lower blocks
+fix     f1 lowlayer setforce 0.0 0.0 0.0
+fix     f2 uplayer aveforce 0.0 0.0 0.0
+
+# Stage 1: High-temperature MD
+velocity    gbregion create ${velT} ${SEED} dist gaussian rot yes
+fix         r1 all nve
+fix         r2 gbregion langevin ${T1} ${T1} $(100*dt) ${SEED}
+#fix         r2 gbregion nvt temp ${T1} ${T1} $(100*dt)
+#fix         r3 uplayer nvt temp ${T1} ${T1} $(100*dt)
+
+timestep    0.002
+run	        ${MDsteps}
+
+# Stage 2: Ramp down the system
+unfix       r2
+fix         r3 gbregion langevin ${T1} ${T0} $(100*dt) ${SEED}
+#fix         r4 gbregion nvt temp ${T1} ${T0} $(100*dt)
+run         1000
+
+# write output
+write_data  STRUC_temp nocoeff
+print       "MD is DONE"
+

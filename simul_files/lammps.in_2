@@ -1,0 +1,78 @@
+
+# ---------- Initialize Simulation --------------------- 
+clear
+units       metal
+dimension   3
+boundary    p p s
+atom_style  atomic
+#variable    f string lammps_end_STRUC
+
+
+# ---------- Create Atomistic Structure --------------------- 
+read_data   STRUC_temp
+mass        * ${MASS}   # W=183.84 Ti=47.867 Cu=63.546   # for some potentials (e.g., MEAM)
+
+variable    Lower1 equal "bound(all, zmin) + v_Lowerb - v_Pad"
+variable    Upper1 equal "bound(all, zmax) - v_Upperb + v_Pad"
+print       "${Lower1}" screen yes
+print       "${Upper1}" screen yes
+
+region      lowlayer block INF INF INF INF INF ${Lower1} units box
+group       lowlayer region lowlayer
+
+region      gbregion block INF INF INF INF ${Lower1} ${Upper1} units box
+group       gbregion region gbregion
+
+region      uplayer block INF INF INF INF ${Upper1} INF units box
+group       uplayer region uplayer
+
+
+# ---------- Define Interatomic Potential --------------------- 
+pair_style  ${STYLE}
+pair_coeff  ${COEFF}
+
+neighbor        2.0 bin
+neigh_modify    delay 10 check yes
+
+
+# ---------- Run Minimization --------------------- 
+fix         f1 lowlayer setforce 0.0 0.0 0.0
+fix         f2 uplayer aveforce 0.0 0.0 0.0
+min_style   cg
+minimize    1e-15 1e-15 100000 100000
+
+
+# ---------- Regroup to compute energies ----------------
+variable    EPad equal 1.5
+variable    Lower2 equal "v_Lower1 - v_EPad"
+variable    Upper2 equal "v_Upper1 + v_EPad"
+region      gbregion2 block INF INF INF INF ${Lower2} ${Upper2} units box
+group       gbregion2 region gbregion2
+
+compute     eng all pe/atom
+compute     eatoms gbregion2 reduce sum c_eng
+reset_timestep  0
+thermo          0
+thermo_style    custom step pe lx ly lz press pxx pyy pzz c_eatoms
+dump        d1 all custom 100 ${f} id type x y z c_eng
+dump_modify d1 sort id
+run 0
+
+
+# ---------- Compute properties --------------------- 
+#variable Ecoh equal -4.85    #Zope: -4.85  #Sa: -4.8722  #Hennig: -4.8312
+variable Ntot equal "count(gbregion2)"
+variable Ebulk equal "v_Ecoh * count(gbregion2)"
+variable Etot equal "c_eatoms"
+variable GBarea equal "lx * ly"
+variable Egb equal "(v_Etot - v_Ebulk)/ v_GBarea * 16.021"
+
+if "(${Egb} < 0.0) " then "variable Egb equal 100"
+
+print "Energy per atom =  ${Ecoh}"
+print "Bulk energy ${Ebulk}"
+print "Etot ${Etot}"
+print "AreaXY = ${GBarea}"
+print "N total atoms = ${Ntot}"
+print "Egb = ${Egb}" append ${f} screen yes
+print "RELAXATION is DONE"
