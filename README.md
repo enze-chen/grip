@@ -89,11 +89,11 @@ We'll try to respond as soon as possible!
 
 
 ## Citation
-If you use GRIP in your work, we would appreciate a citation to the [original manuscript](http://arxiv.org/abs/2404.04230):
+If you use GRIP in your work, we would appreciate a citation to the [original manuscript](https://www.nature.com/articles/s41467-024-51330-9):
 
 > Enze Chen, Tae Wook Heo, Brandon C. Wood, Mark Asta, and Timofey Frolov.
 "Grand canonically optimized grain boundary phases in hexagonal close-packed titanium."
-_arXiv:2404.04230 [cond-mat.mtrl-sci]_, 2024.
+_Nature Communications_, **15**, 7049, 2024.
 
 or in BibTeX format:
 
@@ -102,8 +102,10 @@ or in BibTeX format:
     author = {Chen, Enze and Heo, Tae Wook and Wood, Brandon C. and Asta, Mark and Frolov, Timofey},
     title = {Grand canonically optimized grain boundary phases in hexagonal close-packed titanium},
     year = {2024},
-    journal = {arXiv:2404.04230 [cond-mat.mtrl-sci]},
-    doi = {10.48550/arXiv.2404.04230},
+    journal = {Nature Communications},
+    volume = {15},
+    number = {7049},
+    doi = {10.1038/s41467-024-51330-9},
 }
 ```
 
