@@ -104,7 +104,8 @@ or in BibTeX format:
     year = {2024},
     journal = {Nature Communications},
     volume = {15},
-    number = {7049},
+    number = {1},
+    pages = {7049},
     doi = {10.1038/s41467-024-51330-9},
 }
 ```
