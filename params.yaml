@@ -29,7 +29,7 @@ algo:
     lammps_bin: '/g/g16/chen120/bin/lammps_serial'     # Absolute path to [serial] LAMMPS binary or shell command.
     Emult: 2            # Maximum energy threshold * Egb_min to keep; at least 1.0.
     nruns: 0            # Number of iterations in total (each processor). Set 0 for infinite loop.
-    clear_freq: 100     # Number of iterations before clearing duplicates. Set 0 to never clear.
+    clear_freq: 50     # Number of iterations before clearing duplicates. Set 0 to never clear.
 
 
 # Parameters for the material

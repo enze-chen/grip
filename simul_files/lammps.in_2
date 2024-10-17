@@ -39,7 +39,7 @@ neigh_modify    delay 10 check yes
 fix         f1 lowlayer setforce 0.0 0.0 0.0
 fix         f2 uplayer aveforce 0.0 0.0 0.0
 min_style   cg
-minimize    1e-15 1e-15 100000 100000
+minimize    1e-8 1e-8 100000 100000
 
 
 # ---------- Regroup to compute energies ----------------
@@ -60,7 +60,7 @@ run 0
 
 
 # ---------- Compute properties --------------------- 
-#variable Ecoh equal -4.85    #Zope: -4.85  #Sa: -4.8722  #Hennig: -4.8312
+#variable Ecoh equal -4.85  
 variable Ntot equal "count(gbregion2)"
 variable Ebulk equal "v_Ecoh * count(gbregion2)"
 variable Etot equal "c_eatoms"

@@ -1,4 +1,5 @@
 import argparse
+import numpy as np
 import matplotlib.pyplot as plt
 from ase.io.lammpsrun import read_lammps_dump
 from ase.visualize.plot import plot_atoms
@@ -24,7 +25,8 @@ def make_plot(dir_best: str = "best", hide: bool = False) -> None:
     file_list, ngb_list, Egb_list = process_output(dir_best)[:3]
     Egbmaxmin = max([min(Egb_list[ngb_list==n]) for n in set(ngb_list)])
 
-    fig, ax = plt.subplots()
+    plt.rcParams.update({"font.size":12})
+    fig, ax = plt.subplots(layout="constrained")
     ax.plot(ngb_list, Egb_list, 'o', c='k', ms=3, clip_on=True)
     ymin = ax.get_ylim()[0]
     ax.set(xlim=(0, 1),
@@ -44,8 +46,13 @@ def view_struct(filename: str) -> None:
         filename (str): Name of the LAMMPS dump file.
     """
     s = read_lammps_dump(filename)
-    fig, ax = plt.subplots()
-    plot_atoms(s, ax, radii=1.0, rotation=("90x,0y,0z"))
+    zmid = np.mean([min(s.positions[:,2]), max(s.positions[:,2])])
+    gb_thick = 20
+
+    fig, ax = plt.subplots(figsize=(7,7))
+    plot_atoms(atoms=s, ax=ax, radii=1.6, rotation=("90x,0y,0z"))
+    ax.set_ylim(zmid - gb_thick, zmid + gb_thick)
+    ax.set_axis_off()
     plt.tight_layout()
     plt.show()
 
