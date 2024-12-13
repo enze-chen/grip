@@ -1,0 +1,46 @@
+# Input data for the GRand canonical Interface Predictor (GRIP). Format is YAML.
+
+# Parameters for the algorithm
+algo:
+    ngrid: 100          # Number of grid points in each dim = ngrid * nprocs
+    frac_min: 0.00      # Minimum fraction of atoms on a plane (0 <= n <= 1)
+    frac_max: 1.00      # Maximum fraction of atoms on a plane. Set both to 1.0 for gamma-surface
+    gb_gap: 1           # Initial gap between slabs prior to MD/relaxation (in Ang.)
+    gb_thick: 10        # Thickness of GB region (in Ang.) on either side of interface
+    pad: 6              # Extra padding (A) on top of gb_thick for relaxation / energy calculations
+    vacuum: 2           # Vacuum to add on top for MD (A); less needed for s boundary
+    Emult: 2            # Maximum energy threshold * Egb_min to keep; at least 1.0
+    nruns: 0            # Number of iterations in total (each processor). Set 0 for infinite loop.
+    clear_freq: 100     # Number of iterations before clearing duplicates. Set 0 to never clear.
+
+    MD_run: 0.95        # Probability of running MD simulation before relaxing. [0.0, 1.0] = [Never, Always]
+    Tmin: 1300           # Temperature lower bound for MD simulation
+    Tmax: 3300          # Temperature upper bound, vary in multiple of 100s
+    MD_steps: 1000      # Steps for MD simulation
+    var_steps: True     # True: allow timesteps to be extended
+
+    lammps_bin: '/g/g16/chen120/bin/lammps_serial'     # Path to [serial] LAMMPS binary
+    #lammps_bin: '/jet/home/chenze/bin/lammps_serial'     # Path to [serial] LAMMPS binary
+
+
+# Parameters for the material
+struct:
+    user: False         # True: read existing cells (POSCAR_*), False: generate w/ ase
+    cutoff: 35          # Max height (A) to cut slabs if user=False; speed up calcs. Set to 0 to ignore.
+    write: True         # Write generated cells to POSCAR_*
+    size: [5, 10, 15]     # Replications in [x, y, z] to create supercells. z is not used if user=True
+    reps: 2             # Sample replications (1) exactly, (2) uniform, (3) weighted towards smaller
+
+    # Basic info - potential dependent!!
+    dlat: 0     # Minimal normal component of lattice vector to calculate Nplane. Set 0 to ignore.
+    upper_dirs: [ [1, 1, 5], [-1, 1, 0], [-5, -5, 2] ]     # W(552) tilt
+    lower_dirs: [ [1, 1, -5], [-1, 1, 0], [5, 5, 2] ]
+    symbol: 'W'         # Chemical formula
+    crystal: 'bcc'      # fcc, bcc, hcp, or dc
+    mass: 183.84        # Atomic mass
+    a: 3.164849         # a lattice constant
+    c: 3.164849         # c lattice constant; only used for hcp
+    Ecoh: -8.76         # Energy per atom in bulk
+    pair_style: 'eam/alloy'               # pair_style for LAMMPS
+    pair_coeff: '* * /g/g16/chen120/lammps/pots/W.eam.alloy W'  # pair_coeff for LAMMPS
+

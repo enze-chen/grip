@@ -20,8 +20,8 @@ algo:
     inter_s: 'Ti'       # species of atom to insert.
 
     MD_run: 0.95        # Probability of running MD simulation before relaxing. [0.0, 1.0] = [Never, Always].
-    Tmin: 300           # Temperature lower bound for MD simulation.
-    Tmax: 1200          # Temperature upper bound, vary in multiple of 100s.
+    Tmin: 300           # Temperature lower bound for MD simulation. Min ~0.3 Tm.
+    Tmax: 1200          # Temperature upper bound, vary in multiple of 100s. Max ~0.9 Tm.
     MD_min:   5000      # Min steps for MD simulation.
     MD_max: 500000      # Max steps for MD simulation.
     var_steps: True     # True: allow timesteps to be extended beyond MD_min.
