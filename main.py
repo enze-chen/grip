@@ -35,7 +35,7 @@ def main(infile: str, debug: bool) -> None:
     # Note: The logging package might make debugging print statements easier.
 
     # Create relevant directories like "best," "calc_proc#," etc
-    make_dirs(sim.pid)
+    make_dirs(sim.pid, algo["dir_struct"], algo["dir_calcs"])
 
     # Use structure parameters to create upper and lower bulk slabs
     lower_0, upper_0, dlat = make_crystals(struct, debug)
@@ -96,7 +96,7 @@ def main(infile: str, debug: bool) -> None:
         if debug: print(f"Swapping {swapped_n} GB atoms with interstitial sites.\n")
 
         # Write the GB structure to a file that is the initial structure for LAMMPS
-        input_struct_file = os.path.join("calc_procs", f"calc_proc{sim.pid+1}", "STRUC")
+        input_struct_file = os.path.join(algo["dir_calcs"], f"{algo['dir_calcs']}_{sim.pid+1}", "STRUC")
         bicrystal.write_gb(input_struct_file)
 
         if debug: print(bicrystal)
@@ -130,12 +130,15 @@ if __name__ == "__main__":
                         help="File containing structure & algorithm parameters.")
     parser.add_argument("-d", "--debug", action="store_true",
                         help="Run in DEBUG mode, which prints variables and terminates early.")
+    parser.add_argument("-s", "--seed", type=int, default=1,
+                        help="Random seed for debugging.")
     args = parser.parse_args()
     infile = args.input
     debug = args.debug
+    seed = args.seed
 
     if debug:
-        rng = np.random.default_rng(seed=1)
+        rng = np.random.default_rng(seed=seed)
     else:
         rng = np.random.default_rng()
 

@@ -213,7 +213,7 @@ class Bicrystal():
         lowerb = self.lower.cell[2, 2] - algo["gb_thick"]   # distance from the bottom (intuitive)
         # upperb = lowerb + 2 * algo["gb_thick"] + algo["gb_gap"]   # distance from the bottom
         upperb = self.upper.cell[2, 2] - algo["gb_thick"] # distance from the top (account for MD)
-        self.bounds = [lowerb, upperb, algo["pad"]]
+        self.bounds = np.array([lowerb, upperb, algo["pad"]])
 
 
     def get_gbplane_atoms_u(self) -> int:

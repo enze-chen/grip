@@ -2,7 +2,7 @@
 
 _Authors: [Enze Chen](https://enze-chen.github.io/) (Stanford University) and
 [Timofey Frolov](https://people.llnl.gov/frolov2) (Lawrence Livermore National Laboratory)_     
-_Version: 0.2024.12.12_
+_Version: 0.2025.01.26_
 
 An algorithm for performing grand canonical optimization (GCO) of interfacial
 structure (e.g., grain boundaries) in crystalline materials.

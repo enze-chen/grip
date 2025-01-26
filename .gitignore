@@ -5,7 +5,7 @@
 
 # User additions
 best*
-calc_procs
+calc_procs*
 sub_*.sh
 POSCAR_*
 my_params.yaml

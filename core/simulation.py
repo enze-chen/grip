@@ -86,7 +86,7 @@ class Simulation():
                 self.pid = 0
         else:
             self.pid = 0
-        self.cfold = os.path.join("calc_procs", f"calc_proc{self.pid + 1}")
+        self.cfold = os.path.join(algo["dir_calcs"], f"{algo['dir_calcs']}_{self.pid + 1}")
         self.Emult = algo["Emult"]   # for saving later
         self.counter = 0
         self.best_Egb = 1000
@@ -128,7 +128,11 @@ class Simulation():
         self.md_T = rng.choice(np.arange(self.Tmin, self.Tmax + 1, 100))
         if rng.random() > self.md_run:
             self.md_steps = 0
-        elif self.md_var and not self.debug:
+        elif self.md_var == 1 and not self.debug:
+            # Linearly scale the number of MD steps
+            self.md_steps = int(np.round(rng.integers(self.md_steps0, self.md_steps1, 
+                                                      endpoint=True), -3))
+        elif self.md_var == 2 and not self.debug:
             # Exponentially scale the number of MD steps
             C = np.log(self.md_steps1 / self.md_steps0)
             self.md_steps = int(np.round(self.md_steps0 *
@@ -292,7 +296,8 @@ class Simulation():
             None
         """
         if system.Egb < self.best_Egb * self.Emult:
-            self.best_Egb = system.Egb
+            if system.Egb < self.best_Egb:
+                self.best_Egb = system.Egb
 
             # Custom file name to differentiate results
             fname2best = f"lammps_{system.Egb:.3f}_{system.n:.3f}_" + \
@@ -308,6 +313,11 @@ class Simulation():
                       f"{os.path.join(best_dir, fname2best)}")
 
             # Periodically remove duplicate structures
-            if self.clear_freq and self.counter % self.clear_freq == 0:
-                print(f"Clearing {best_dir} now\n")
-                clear_best(best_dir)
+            if self.clear_freq:
+                if self.counter % (5 * self.clear_freq) == 0:
+                    print(f"Clearing highest energy from {best_dir} now\n")
+                    clear_best(best_dir, extra=True, alpha=0.5)
+                elif self.counter % self.clear_freq == 0:
+                    print(f"Clearing {best_dir} now\n")
+                    clear_best(best_dir)
+

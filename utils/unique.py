@@ -9,7 +9,7 @@ import pandas as pd
 
 #############################################################################
 
-def process_output(rootdir: str = 'best') -> Tuple[list, ndarray, ndarray]:
+def process_output(dir_best: str = 'best') -> Tuple[list, ndarray, ndarray]:
     """
     Process the output files and get the Egb and n values.
 
@@ -102,7 +102,10 @@ def clear_best(dir_best: str = 'best', extra: bool = False, thresh: float = 0.00
     files_to_delete = set(file_list) - set(unique_files)
     print(f"Removing {len(files_to_delete)} files.")
     for d in files_to_delete:
-        os.remove(os.path.join(dir_best, d))
+        try:
+            os.remove(os.path.join(dir_best, d))
+        except FileNotFoundError:
+            pass
 
     # Put lists into a pandas DataFrame
     lists = process_output(dir_best)
@@ -138,11 +141,16 @@ def clear_best(dir_best: str = 'best', extra: bool = False, thresh: float = 0.00
         to_delete = set(to_delete)
         print(f"Removing {len(to_delete)} files.")
         for f in to_delete:
-            os.remove(os.path.join(dir_best, f))
+            try:
+                os.remove(os.path.join(dir_best, f))
+            except FileNotFoundError:
+                pass
 
+    df.sort_values('Egb', inplace=True)
     if save:
-        df.sort_values('Egb', inplace=True)
         df.to_csv(f"{dir_best}/best_grip_data.csv", index=False)
+
+    return df
 
 
 if __name__ == "__main__":
@@ -164,6 +172,6 @@ if __name__ == "__main__":
     alpha = args.alpha
     save = args.save
 
-    clear_best(dir_best, extra, thresh, alpha, save)
-
-    call(f'ls -lh {dir_best} | head -n 15', shell=True)
+    df = clear_best(dir_best, extra, thresh, alpha, save)
+    print(df.head(15))
+    #call(f'ls -lh {dir_best} | head -n 15', shell=True)

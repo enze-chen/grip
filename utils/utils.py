@@ -86,30 +86,33 @@ def get_inputs(input_data: str = "params.yaml", debug: bool = False) -> Tuple[di
     return struct, algo
 
 
-def make_dirs(pid: int, dirname: str = "best") -> None:
+def make_dirs(pid: int, dir_struct: str = "best", dir_calcs: str = "calc_procs") -> None:
     """
     Make a directory to store the best unique structures.
 
     Args:
         pid (int): Current process ID.
 
-        dirname (str, optional): Name of folder to store best structures.
+        dir_struct (str, optional): Name of folder to store best structures.
         Defaults to "best".
+
+        dir_calcs (str, optional): Name of folder to store calculation files.
+        Defaults to "calc_procs".
 
     Returns:
         None, but folders are created.
     """
     # Delete old calculation folders
-    shutil.rmtree("calc_procs", ignore_errors=True)
+    shutil.rmtree(dir_calcs, ignore_errors=True)
     time.sleep(1)
 
     # Make new folders for parallel calculations
-    os.makedirs(dirname, exist_ok=True)
-    os.makedirs("calc_procs", exist_ok=True)
+    os.makedirs(dir_struct, exist_ok=True)
+    os.makedirs(dir_calcs, exist_ok=True)
     time.sleep(1)
 
     shutil.copytree("simul_files",
-                    os.path.join("calc_procs", f"calc_proc{pid+1}"),
+                    os.path.join(dir_calcs, f"{dir_calcs}_{pid+1}"),
                     dirs_exist_ok=True)
     time.sleep(2)
 
