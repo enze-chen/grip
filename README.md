@@ -24,7 +24,7 @@ The algorithm repeatedly samples different structures in two phases:
 - [Python](https://www.python.org/) (3.6+)
 - [NumPy](https://numpy.org/) (1.23.0)
 - [ASE](https://wiki.fysik.dtu.dk/ase/) (3.22.1)
-- [LAMMPS](https://www.lammps.org) (stable)
+- [LAMMPS](https://www.lammps.org) (stable, **serial** binary only)
 
 _Optional_
 - [pandas](https://pandas.pydata.org/) (1.5.3)
