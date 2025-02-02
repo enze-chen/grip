@@ -195,6 +195,7 @@ class Simulation():
             p2 = Popen(input2, stdout=PIPE, stderr=PIPE)
             p2.wait()
         else:
+            print("Cannot find LAMMPS executable! Check path.")
             # If LAMMPS doesn't exist, just write a dummy output file
             #os.system(f"copy {os.path.join('..', '..', 'best', 'lammps_0.731_0.75_5.45_1.11_1_2_1000_100')} {self.fname_final}")
             self.write_dummy_lammps_dump(self.fname_final, system)

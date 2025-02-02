@@ -20,7 +20,7 @@ def process_output(dir_best: str = 'best') -> Tuple[list, ndarray, ndarray]:
     Returns:
         The list of file names and NumPy arrays for the GB energy and n.
     """
-    file_list = sorted([x for x in os.listdir(rootdir) if x.startswith('lammps_')])
+    file_list = sorted([x for x in os.listdir(dir_best) if x.startswith('lammps_')])
     Egb_list, ngb_list, dx_list, dy_list = [], [], [], []
     rx_list, ry_list, T_list, steps_list = [], [], [], []
 

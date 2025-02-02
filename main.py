@@ -107,6 +107,7 @@ def main(infile: str, debug: bool) -> None:
         if debug: print(f"The simulation parameters are T={sim.md_T}, N={sim.md_steps}")
 
         # Run the MD simulation to produce a final, relaxed GB structure
+        if debug: print(f"Running MD sampling")
         sim.run_md(bicrystal, update_gb=True)
 
         # Get the GB energy from the last line in the final file (lammps_end_STRUC)

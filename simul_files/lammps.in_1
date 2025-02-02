@@ -44,6 +44,8 @@ neigh_modify    every 1 delay 1 check yes
 # fix upper and lower blocks
 fix     f1 lowlayer setforce 0.0 0.0 0.0
 fix     f2 uplayer aveforce 0.0 0.0 0.0
+min_style   cg
+minimize    1e-15 1e-15 100000 100000
 
 # Stage 1: High-temperature MD
 velocity    gbregion create ${velT} ${SEED} dist gaussian rot yes
