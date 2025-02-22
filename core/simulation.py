@@ -315,7 +315,7 @@ class Simulation():
 
             # Periodically remove duplicate structures
             if self.clear_freq:
-                if self.counter % (5 * self.clear_freq) == 0:
+                if len(os.listdir(best_dir)) > 4000:
                     print(f"Clearing highest energy from {best_dir} now\n")
                     clear_best(best_dir, extra=True, alpha=0.5)
                 elif self.counter % self.clear_freq == 0:
