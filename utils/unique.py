@@ -174,4 +174,4 @@ if __name__ == "__main__":
 
     df = clear_best(dir_best, extra, thresh, alpha, save)
     print(df.head(15))
-    #call(f'ls -lh {dir_best} | head -n 15', shell=True)
+

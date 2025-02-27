@@ -2,7 +2,7 @@
 
 _Authors: [Enze Chen](https://enze-chen.github.io/) (Stanford University) and
 [Timofey Frolov](https://people.llnl.gov/frolov2) (Lawrence Livermore National Laboratory)_     
-_Version: 0.2025.02.22_
+_Version: 0.2025.02.27_
 
 An algorithm for performing grand canonical optimization (GCO) of interfacial
 structure (e.g., grain boundaries) in crystalline materials.
@@ -34,7 +34,8 @@ _Optional_
 
 ## Usage
 
-Assuming the above libraries are installed, clone the repo and make the 
+GRIP functions as a collection of scripts, there's no binary that you need to install or compile.
+Assuming the above Python libraries are installed, clone the repo and make the 
 appropriate modifications in `params.yaml` (see file for detailed comments), 
 including the path to the LAMMPS binary on your system.
 If you wish, you can supply your own slabs for the bicrystal configuration as

@@ -15,11 +15,12 @@ algo:
     vacuum: 1               # Vacuum to add on top for MD (A); less needed for s boundary.
 
     inter_p: 0.0            # Probability of swapping with interstitial sites. [0.0, 1.0] = [Never, Always].
+    inter_s: 'Ti'           # species of atom to insert.
     inter_n: 2              # Number of GB interstitial sites to swap with atoms in GB region.
     inter_t: 1.5            # Thickness of region (A) on either side of GB to search for interstitials.
     inter_u: False          # Only choose unique interstitial sites.
-    inter_r: True           # Randomly choose interstitial sites vs. largest volume
-    inter_s: 'Ti'           # species of atom to insert.
+    inter_r: True           # True = randomly choose sites; False = largest volume
+    inter_w: 2              # How to swap: 1 = only subs, 2 = only inter, 3 = uniform, 4 = mostly subs, 5 = mostly inter
 
     MD_run: 0.95            # Probability of running MD simulation before relaxing. [0.0, 1.0] = [Never, Always].
     Tmin: 300               # Temperature lower bound for MD simulation. Min ~0.3 Tm.
