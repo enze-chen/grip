@@ -47,6 +47,7 @@ python main.py
 ```
 If you don't have LAMMPS or just want to test the script, you can run it with the `-d` flag.
 See the `.examples` folder for a SLURM submission script for parallel execution (preferred).
+Note that GRIP can use multiple cores, but only those on a single node.
 
 
 ## File structure
@@ -78,6 +79,7 @@ to the same folder as the GRIP output files.
 - Add parallelism for other job schedulers besides SLURM.
 - Create more flexible workflow classes for Monte Carlo moves, energy minimization options, etc.
 - Extend the code to be compatible with the parallel build of LAMMPS.
+- Extend the code to work on cores across multiple compute nodes.
 - Extend the compositional DOF to work with multi-component systems.
 - Add in Bayesian optimization to narrow down simulation parameters.
 - Incorporate ways to identify the GB atoms.
