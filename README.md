@@ -16,6 +16,7 @@ The algorithm repeatedly samples different structures in two phases:
   evaluation methods (e.g., density functional theory in [VASP](https://www.vasp.at))
   may be used.
 
+Video tutorials for some of the capabilities and usage patterns can be found on YouTube in our [2025 TMS presentation](https://youtu.be/QtuUdnOl1k4) and [command line examples](https://youtu.be/5BwtWnQ-JR8). 🎥
 
 ------
 
