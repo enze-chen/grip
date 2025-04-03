@@ -8,7 +8,7 @@ import numpy as np
 from ase.lattice.bravais import Lattice
 from ase.lattice.hexagonal import HexagonalClosedPacked, Hexagonal
 from ase.lattice.cubic import FaceCenteredCubic, BodyCenteredCubic, Diamond, SimpleCubic
-from ase.io.vasp import read_vasp, write_vasp
+import ase.io
 
 from utils.constants import P_SHIFT, Z_THRESH
 
@@ -165,8 +165,8 @@ def make_crystals(struct: dict, debug: bool = False) -> Tuple[Lattice, Lattice, 
     """
     init_size = (1, 1, struct["size"][2])
     if struct["user"]:
-        upper_crystal = read_vasp("POSCAR_UPPER")
-        lower_crystal = read_vasp("POSCAR_LOWER")
+        upper_crystal = ase.io.read("POSCAR_UPPER", format="vasp")
+        lower_crystal = ase.io.read("POSCAR_LOWER", format="vasp")
         dlat = struct["dlat"]
     else:
         if struct["crystal"] == "fcc":
@@ -265,10 +265,8 @@ def make_crystals(struct: dict, debug: bool = False) -> Tuple[Lattice, Lattice, 
 
         # Save the structures (POSCAR_*) to the current directory
         if struct["write"]:
-            write_vasp("POSCAR_UPPER", upper_crystal, direct=True,
-                  label=f'{struct["symbol"]} UPPER - {struct["upper_dirs"]}')
-            write_vasp("POSCAR_LOWER", lower_crystal, direct=True,
-                  label=f'{struct["symbol"]} LOWER - {struct["lower_dirs"]}')
+            ase.io.write("POSCAR_UPPER", upper_crystal, format="vasp")
+            ase.io.write("POSCAR_LOWER", lower_crystal, format="vasp")
 
     # Warn if slabs are too short in z direction (arbitrarily chosen)
     if upper_crystal.cell[2, 2] < 20:
