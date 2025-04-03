@@ -67,7 +67,7 @@ Use the `-e` flag for more aggressive cleaning (>50%).
 Use the `-s` flag to save the processed results to CSV from a pandas DataFrame.
 
 Results can be visualized by running `python utils/plot_gco.py` and it generates a 
-GCO plot of $E_{\mathrm{gb}}$ vs. $n$.
+GCO plot of $E_{\mathrm{gb}}$ vs. $[n]$.
 The `.examples` folder has this plot for several boundaries.
 By default executing this file will save both the results (CSV) and the figure (PNG) 
 to the same folder as the GRIP output files.

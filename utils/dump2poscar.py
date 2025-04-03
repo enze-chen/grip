@@ -6,14 +6,13 @@ import shutil
 import numpy as np
 import pandas as pd
 
-from ase.io.lammpsrun import read_lammps_dump
-from ase.io.vasp import write_vasp, read_vasp
+import ase.io
 
 
 def create_ref_dft(ref_file, gb_struct, vacuum):
     ngb = len(gb_struct)
     aa, bb, cc = gb_struct.cell
-    s = read_vasp(ref_file)
+    s = ase.io.read(ref_file, format="vasp")
 
     # First replicate as needed
     ar, br, cr = s.cell
@@ -44,7 +43,7 @@ def create_gb_struct(gb_file, thickness, vacuum, symb):
     sub = df[(df['z'] > 10) & (df['z'] < zmax - 10)]
     zmid = np.mean(sub[sub['c_eng'] > 1.02 * sub['c_eng'].max()].z)
     
-    s = read_lammps_dump(gb_file)
+    s = ase.io.read(gb_file, format="lammps-dump-text")
     s.positions -= [0, 0, zmid - thickness/2]
     s.cell[2, 2] = thickness + vacuum
     del s[[a.index for a in s if (a.position[2] < 0) or (a.position[2] > thickness)]]
@@ -100,5 +99,5 @@ if __name__ == '__main__':
 
         if N < Nthresh and Egb < Ethresh:
             final_file = os.path.join(outfolder, f"POSCAR_{N}_{'_'.join(tokens[1:])}")
-            write_vasp(final_file, s, direct=True, sort=True, wrap=False)
+            ase.io.write(final_file, s, format="vasp")
 
