@@ -27,6 +27,7 @@ Video tutorials for some of the capabilities and usage patterns can be found on 
 - [NumPy](https://numpy.org/) (1.23.0)
 - [ASE](https://wiki.fysik.dtu.dk/ase/) (3.22.1)
 - [LAMMPS](https://www.lammps.org) (stable, **serial** binary only)
+- [MPI for Python](https://mpi4py.readthedocs.io/en/stable) (for PBS resource managers only)
 
 _Optional_
 - [pandas](https://pandas.pydata.org/) (1.5.3)
