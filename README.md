@@ -1,5 +1,5 @@
 # GRand canonical Interface Predictor (GRIP)
-
+ 
 _Authors: [Enze Chen](https://enze-chen.github.io/) (Stanford University) and
 [Timofey Frolov](https://people.llnl.gov/frolov2) (Lawrence Livermore National Laboratory)_     
 _Version: 0.2025.02.27_
