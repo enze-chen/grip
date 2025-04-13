@@ -2,7 +2,7 @@
 
 _Authors: [Enze Chen](https://enze-chen.github.io/) (Stanford University) and
 [Timofey Frolov](https://people.llnl.gov/frolov2) (Lawrence Livermore National Laboratory)_     
-_Version: 0.2025.02.27_
+_Version: 0.2025.04.12_
 
 An algorithm for performing grand canonical optimization (GCO) of interfacial
 structure (e.g., grain boundaries) in crystalline materials.
@@ -77,14 +77,15 @@ to the same folder as the GRIP output files.
 
 
 ## Areas for improvement
-- Add parallelism for other job schedulers besides SLURM.
-- Create more flexible workflow classes for Monte Carlo moves, energy minimization options, etc.
-- Extend the code to be compatible with the parallel build of LAMMPS.
-- Extend the code to work on cores across multiple compute nodes.
-- Extend the compositional DOF to work with multi-component systems.
-- Add in Bayesian optimization to narrow down simulation parameters.
-- Incorporate ways to identify the GB atoms.
-- Optimize the saving of files to reduce the memory footprint (sometimes > 1 GB).
+- [x] Add parallelism for other job schedulers besides SLURM.
+- [ ] Create more flexible workflow classes for Monte Carlo moves, energy minimization options, etc.
+- [ ] Extend the code to be compatible with the parallel build of LAMMPS.
+- [ ] Extend the code to work on cores across multiple compute nodes.
+- [ ] Extend the compositional DOF to work with multi-component systems.
+- [ ] Add in Bayesian optimization to narrow down simulation parameters.
+- [ ] Incorporate ways to identify the GB atoms on the fly.
+- [ ] Optimize the saving of files to reduce the memory footprint (sometimes > 1 GB).
+- [ ] Improve the error handling if LAMMPS crashes (and resubmit?)
 
 
 ## Contributing

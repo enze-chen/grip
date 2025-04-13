@@ -80,8 +80,10 @@ class Simulation():
         if not self.debug:
             if "SLURM_PROCID" in os.environ:
                 self.pid = int(os.environ["SLURM_PROCID"])
-            elif "PBS_VNODENUM" in os.environ:
-                self.pid = int(os.environ["PBS_VNODENUM"])
+            elif "PBS_TASKNUM" in os.environ:
+                from mpi4py import MPI
+                comm = MPI.COMM_WORLD
+                self.pid = comm.Get_rank()
             else:
                 self.pid = 0
         else:

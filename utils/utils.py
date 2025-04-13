@@ -356,8 +356,8 @@ def get_xy_translation(slab: Lattice, rng: np.random.Generator, ngrid: int,
     if not debug:
         if "SLURM_NPROCS" in os.environ:
             nproc = int(os.environ["SLURM_NPROCS"])
-        elif "PBS_NP" in os.environ:
-            nproc = int(os.environ["PBS_NP"])
+        elif "PBS_TASKNUM" in os.environ:
+            nproc = int(os.environ["NCPUS"])
         else:
             nproc = 1
     else:
