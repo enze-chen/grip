@@ -5,8 +5,8 @@ from subprocess import Popen, PIPE, getstatusoutput
 import numpy as np
 from ase.io.lammpsrun import read_lammps_dump
 
-from core.bicrystal import Bicrystal
-from utils.unique import clear_best
+from . import Bicrystal
+from .utils.unique import clear_best
 
 class Simulation():
     """
