@@ -8,16 +8,13 @@ atom_style  atomic
 
 variable    T0 equal 50   # Tm  W=3695  Ti=1941
 variable    velT equal "v_T1 * 2"
-#variable    MDsteps equal 5000
-#variable    SEED equal 1
-
 
 # ---------- Create Atomistic Structure --------------------- 
 read_data   STRUC
 mass        * ${MASS} # W=183.84 Ti=47.867 Cu=63.546   # for some potentials (e.g., MEAM)
 
-variable    Lower1 equal "bound(all, zmin) + v_Lowerb"
-variable    Upper1 equal "bound(all, zmax) - v_Upperb"
+variable    Lower1 equal bound(all,zmin)+${Lowerb}
+variable    Upper1 equal bound(all,zmax)+${Upperb}
 print       "${Lower1}" screen yes
 print       "${Upper1}" screen yes
 
