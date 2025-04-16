@@ -1,4 +1,5 @@
 import os
+import subprocess
 from subprocess import Popen, PIPE, getstatusoutput
 
 import numpy as np
@@ -180,8 +181,7 @@ class Simulation():
                           "-v", "Lowerb", str(system.bounds[0]),
                           "-v", "Upperb", str(system.bounds[1]),
                           "-v", "MASS", str(self.mass), "-log", "log.lammps_1"]
-                p1 = Popen(input1, stdout=PIPE, stderr=PIPE)
-                p1.wait()
+                subprocess.run(input1, stdout=PIPE, stderr=PIPE)
             else:
                 # If no MD, copy the initial structure for part 2
                 os.system("cp STRUC STRUC_temp")
@@ -194,8 +194,7 @@ class Simulation():
                         "-v", "Upperb", str(system.bounds[1]),
                         "-v", "Pad", str(system.bounds[2]),
                         "-v", "f", self.fname_final, "-log", "log.lammps_2"]
-            p2 = Popen(input2, stdout=PIPE, stderr=PIPE)
-            p2.wait()
+            subprocess.run(input2, stdout=PIPE, stderr=PIPE)
         else:
             print("Cannot find LAMMPS executable! Check path.")
             # If LAMMPS doesn't exist, just write a dummy output file
