@@ -1,6 +1,7 @@
 import os
 import subprocess
 from subprocess import Popen, PIPE, getstatusoutput
+import shlex
 
 import numpy as np
 from ase.io.lammpsrun import read_lammps_dump
@@ -172,29 +173,40 @@ class Simulation():
         run_dir = os.path.join(self.root, self.cfold)
         os.chdir(run_dir)
 
-        if os.path.exists(self.lmp) or getstatusoutput(self.lmp + " -h")[0] == 0:
+        if os.path.exists(self.lmp) or getstatusoutput(shlex.split(f'"{self.lmp}" -h'))[0] == 0:
             # First perform MD run
             if self.md_steps > 0:
-                input1 = [self.lmp, "-i", "lammps.in_1", "-v", "T1", str(self.md_T),
-                          "-v", "MDsteps", str(self.md_steps), "-v", "SEED", str(self.pid+1),
-                          "-v", "STYLE", self.md_style, "-v", "COEFF", self.md_coeff,
-                          "-v", "Lowerb", str(system.bounds[0]),
-                          "-v", "Upperb", str(system.bounds[1]),
-                          "-v", "MASS", str(self.mass), "-log", "log.lammps_1"]
-                subprocess.run(input1, stdout=PIPE, stderr=PIPE)
+                input1 = ' '.join([
+                    f'"{self.lmp}" -i lammps.in_1',
+                    f'-v T1 {self.md_T}',
+                    f'-v MDsteps {self.md_steps}',
+                    f'-v SEED {self.pid + 1}',
+                    f'-v STYLE {self.md_style}',
+                    f'-v COEFF "{self.md_coeff}"',
+                    f'-v Lowerb {system.bounds[0]}', 
+                    f'-v Upperb {system.bounds[1]}',
+                    f'-v MASS {self.mass}',
+                    '-log log.lammps_1'
+                ])
+                subprocess.run(shlex.split(input1), stdout=PIPE, stderr=PIPE, check=True)
             else:
                 # If no MD, copy the initial structure for part 2
                 os.system("cp STRUC STRUC_temp")
 
             # Second perform static relaxation
-            input2 = [self.lmp, "-i", "lammps.in_2",
-                        "-v", "STYLE", self.md_style, "-v", "COEFF", self.md_coeff,
-                        "-v", "Ecoh", str(self.Ecoh), "-v", "MASS", str(self.mass),
-                        "-v", "Lowerb", str(system.bounds[0]),
-                        "-v", "Upperb", str(system.bounds[1]),
-                        "-v", "Pad", str(system.bounds[2]),
-                        "-v", "f", self.fname_final, "-log", "log.lammps_2"]
-            subprocess.run(input2, stdout=PIPE, stderr=PIPE)
+            input2 = ' '.join([
+                f'"{self.lmp}" -i lammps.in_2',
+                f'-v STYLE {self.md_style}',
+                f'-v COEFF "{self.md_coeff}"',
+                f'-v Ecoh {self.Ecoh}',
+                f'-v MASS {self.mass}',
+                f'-v Lowerb {system.bounds[0]}',
+                f'-v Upperb {system.bounds[1]}',
+                f'-v Pad {system.bounds[2]}',
+                f'-v f {self.fname_final}',
+                '-log log.lammps_2',
+            ])
+            subprocess.run(shlex.split(input2), stdout=PIPE, stderr=PIPE, check=True)
         else:
             print("Cannot find LAMMPS executable! Check path.")
             # If LAMMPS doesn't exist, just write a dummy output file
