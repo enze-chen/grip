@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import os
-from argparse import ArgumentParser
 import numpy as np
 
 from . import Bicrystal
@@ -10,7 +9,9 @@ from .utils.utils import make_dirs, get_inputs, make_crystals, compute_weights, 
 
 ##############################################################################
 
-def run(infile: str, debug: bool, seed: int) -> None:
+def run(infile: str = 'params.yaml',
+        debug: bool = False,
+        seed: int = 1) -> None:
     """
     Performs grand canonical optimization of GB structures.
 
@@ -20,6 +21,9 @@ def run(infile: str, debug: bool, seed: int) -> None:
 
         debug (bool): Flag for running in DEBUG mode.
         Defaults to False.
+
+        seed (int): Random number seed to use in DEBUG mode.
+        Defaults to 1.
 
     Returns:
         None.
