@@ -14,7 +14,7 @@ read_data   STRUC
 mass        * ${MASS} # W=183.84 Ti=47.867 Cu=63.546   # for some potentials (e.g., MEAM)
 
 variable    Lower1 equal bound(all,zmin)+${Lowerb}
-variable    Upper1 equal bound(all,zmax)+${Upperb}
+variable    Upper1 equal bound(all,zmax)-${Upperb}
 print       "${Lower1}" screen yes
 print       "${Upper1}" screen yes
 
