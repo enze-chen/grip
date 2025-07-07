@@ -1,56 +1,59 @@
 # Input data for the GRand canonical Interface Predictor (GRIP). Format is YAML.
 
 # Parameters for the algorithm
-algo:
-    ngrid: 100          # Number of grid points in each dim = ngrid * nprocs.
-    frac_min: 0.00      # Minimum fraction of atoms on a plane (0 <= n <= 1).
-    frac_max: 1.00      # Maximum fraction of atoms on a plane. Set both to 1.0 for gamma-surface.
-    gb_gap: 0.3         # Initial gap between slabs prior to MD/relaxation (in Ang.).
-    perturb_u: 0.3      # Maximum random perturbation (A) of atoms above GB
-    perturb_l: 0.0      # Maximum random perturbation (A) of atoms below GB
-    gb_thick: 10        # Thickness of GB region (in Angstrom) on either side of interface.
-    pad: 10             # Extra padding (A) on top of gb_thick for relaxation / energy calculations.
-    vacuum: 1           # Vacuum to add on top for MD (A); less needed for s boundary.
+algo: 
+    dir_struct: 'best'      # Folder to store best structures.
+    dir_calcs: 'calc_procs' # Folder to store temporary calculation files.
+    ngrid: 100              # Number of grid points in each dim = ngrid * nprocs.
+    frac_min: 0.00          # Minimum fraction of atoms on a plane (0 <= n <= 1).
+    frac_max: 1.00          # Maximum fraction of atoms on a plane. Set both to 1.0 for gamma-surface.
+    gb_gap: 0.3             # Initial gap between slabs prior to MD/relaxation (in Ang.).
+    perturb_u: 0.3          # Maximum random perturbation (A) of atoms above GB
+    perturb_l: 0.0          # Maximum random perturbation (A) of atoms below GB
+    gb_thick: 10            # Thickness of GB region (in Angstrom) on either side of interface.
+    pad: 10                 # Extra padding (A) on top of gb_thick for relaxation / energy calculations.
+    vacuum: 1               # Vacuum to add on top for MD (A); less needed for s boundary.
 
-    inter_p: 0.0        # Probability of swapping with interstitial sites. [0.0, 1.0] = [Never, Always].
-    inter_n: 2          # Number of GB interstitial sites to swap with atoms in GB region.
-    inter_t: 1.5        # Thickness of region (A) on either side of GB to search for interstitials.
-    inter_u: False      # Only choose unique interstitial sites.
-    inter_r: True       # Randomly choose interstitial sites vs. largest volume
-    inter_s: 'Cu'       # species of atom to insert.
+    inter_p: 0.0            # Probability of swapping with interstitial sites. [0.0, 1.0] = [Never, Always].
+    inter_s: 'Cu'           # species of atom to insert.
+    inter_n: 2              # Number of GB interstitial sites to swap with atoms in GB region.
+    inter_t: 1.5            # Thickness of region (A) on either side of GB to search for interstitials.
+    inter_u: False          # Only choose unique interstitial sites.
+    inter_r: True           # Randomly choose interstitial sites vs. largest volume
+    inter_w: 2              # How to swap: 1 = only subs, 2 = only inter, 3 = uniform, 4 = mostly subs, 5 = mostly inter
 
-    MD_run: 0.95        # Probability of running MD simulation before relaxing. [0.0, 1.0] = [Never, Always].
-    Tmin: 300           # Temperature lower bound for MD simulation.
-    Tmax: 1200          # Temperature upper bound, vary in multiple of 100s.
-    MD_min:   5000      # Min steps for MD simulation.
-    MD_max: 300000      # Max steps for MD simulation.
-    var_steps: True     # True: allow timesteps to be extended beyond MD_min.
+    MD_run: 0.95            # Probability of running MD simulation before relaxing. [0.0, 1.0] = [Never, Always].
+    Tmin: 300               # Temperature lower bound for MD simulation.
+    Tmax: 1200              # Temperature upper bound, vary in multiple of 100s.
+    MD_min:   5000          # Min steps for MD simulation.
+    MD_max: 300000          # Max steps for MD simulation.
+    var_steps: 2            # 0 = Min steps only; 1 = linear sample; 2 = exponential sample
 
     lammps_bin: '/g/g16/chen120/bin/lammps_serial'     # Path to [serial] LAMMPS binary.
-    Emult: 2            # Maximum energy threshold * Egb_min to keep; at least 1.0.
-    nruns: 0            # Number of iterations in total (each processor). Set 0 for infinite loop.
-    clear_freq: 100     # Number of iterations before clearing duplicates. Set 0 to never clear.
+    Emult: 2                # Maximum energy threshold * Egb_min to keep; at least 1.0.
+    nruns: 0                # Number of iterations in total (each processor). Set 0 for infinite loop.
+    clear_freq: 50          # Number of iterations before clearing duplicates. Set 0 to never clear.
 
 
 # Parameters for the material
 struct:
-    user: False         # True: read existing cells (POSCAR_*), False: generate w/ ase.
-    cutoff: 35          # Max height (A) to cut slabs if user=False; speed up calcs. Set to 0 to ignore.
-    write: True         # Write generated cells to POSCAR_*
-    size0: [1, 1, 1]    # Minimum replications in [x, y, z] to create supercells.
-    size: [3, 12, 15]    # Replications in [x, y, z] to create supercells. z is not used if user=True.
-    reps: 2             # Sample replications (1) exactly, (2) uniform, (3) weighted towards smaller.
+    user: False             # True: read existing cells (POSCAR_*), False: generate w/ ase.
+    cutoff: 35              # Max height (A) to cut slabs if user=False; speed up calcs. Set to 0 to ignore.
+    write: True             # Write generated cells to POSCAR_*
+    size0: [1, 1, 1]        # Minimum replications in [x, y, z] to create supercells.
+    size: [3, 12, 15]       # Replications in [x, y, z] to create supercells. z is not used if user=True.
+    reps: 2                 # Sample replications (1) exactly, (2) uniform, (3) weighted smaller, (4) weighted larger.
 
     # Basic info - potential dependent!!
-    dlat: 0     # Minimal normal component of lattice vector to calculate Nplane. Set 0 to ignore.
     upper_dirs: [ [2, 1, 0], [0, 0, -1], [-1, 2, 0] ]     # Cu(210) tilt
     lower_dirs: [ [2, -1, 0], [0, 0, -1], [1, 2, 0] ]
-    symbol: 'Cu'        # Chemical formula
-    crystal: 'fcc'      # fcc, bcc, hcp, or dc
-    mass: 63.546        # Atomic mass
-    a: 3.615            # a lattice constant
-    c: 3.615            # c lattice constant; only used for hcp
-    Ecoh: -3.54         # Energy per atom in bulk
+    symbol: 'Cu'            # Chemical formula
+    crystal: 'fcc'          # fcc, bcc, hcp, or dc
+    mass: 63.546            # Atomic mass
+    a: 3.615                # a lattice constant;
+    c: 3.615                # c lattice constant; only used for hcp
+    dlat: 0                 # Minimal normal component of lattice vector to calculate Nplane. Set 0 to ignore.
+    Ecoh: -3.54             # Energy per atom in bulk
     pair_style: 'eam/alloy'               # pair_style for LAMMPS
     pair_coeff: '* * /g/g16/chen120/lammps/pots/Cu.eam.alloy Cu'  # pair_coeff for LAMMPS
 
