@@ -1,0 +1,3 @@
+graft gbgrip/simul_files/*
+
+global-exclude *.py[cod]
