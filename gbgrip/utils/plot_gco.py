@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from ase.io.lammpsrun import read_lammps_dump
 from ase.visualize.plot import plot_atoms
 
-from unique import clear_best, process_output
+from .unique import clear_best, process_output
 
 #############################################################################
 

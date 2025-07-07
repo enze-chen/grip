@@ -5,15 +5,14 @@ units       metal
 dimension   3
 boundary    p p s
 atom_style  atomic
-#variable    f string lammps_end_STRUC
 
 
 # ---------- Create Atomistic Structure --------------------- 
 read_data   STRUC_temp
 mass        * ${MASS}   # W=183.84 Ti=47.867 Cu=63.546   # for some potentials (e.g., MEAM)
 
-variable    Lower1 equal "bound(all, zmin) + v_Lowerb - v_Pad"
-variable    Upper1 equal "bound(all, zmax) - v_Upperb + v_Pad"
+variable    Lower1 equal bound(all,zmin)+v_Lowerb-v_Pad
+variable    Upper1 equal bound(all,zmax)-v_Upperb+v_Pad
 print       "${Lower1}" screen yes
 print       "${Upper1}" screen yes
 
@@ -60,7 +59,6 @@ run 0
 
 
 # ---------- Compute properties --------------------- 
-#variable Ecoh equal -4.85  
 variable Ntot equal "count(gbregion2)"
 variable Ebulk equal "v_Ecoh * count(gbregion2)"
 variable Etot equal "c_eatoms"

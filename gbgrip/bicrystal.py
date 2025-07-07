@@ -8,8 +8,8 @@ from ase import Atom
 from ase.lattice.bravais import Lattice
 from ase.io.lammpsdata import write_lammps_data
 
-from core.interstitial import Interstitial
-from utils.constants import Z_THRESH
+from . import Interstitial
+from .utils.constants import Z_THRESH
 
 class Bicrystal():
     """

@@ -1,8 +1,10 @@
 import os
+from pathlib import Path
 import shutil
 import time
 import yaml
 from typing import Tuple
+from importlib import resources
 
 import numpy as np
 from ase.lattice.bravais import Lattice
@@ -10,7 +12,7 @@ from ase.lattice.hexagonal import HexagonalClosedPacked, Hexagonal
 from ase.lattice.cubic import FaceCenteredCubic, BodyCenteredCubic, Diamond, SimpleCubic
 import ase.io
 
-from utils.constants import P_SHIFT, Z_THRESH
+from .constants import P_SHIFT, Z_THRESH
 
 #############################################################################
 
@@ -107,13 +109,28 @@ def make_dirs(pid: int, dir_struct: str = "best", dir_calcs: str = "calc_procs")
     time.sleep(1)
 
     # Make new folders for parallel calculations
-    os.makedirs(dir_struct, exist_ok=True)
-    os.makedirs(dir_calcs, exist_ok=True)
+    Path(dir_struct).mkdir(exist_ok=True)
+    #os.makedirs(dir_calcs, exist_ok=True)
+    Path(dir_calcs, f"{dir_calcs}_{pid+1}").mkdir(parents=True, exist_ok=True)
+
     time.sleep(1)
 
-    shutil.copytree("simul_files",
-                    os.path.join(dir_calcs, f"{dir_calcs}_{pid+1}"),
-                    dirs_exist_ok=True)
+    # Copy simul_files
+    if hasattr(resources, 'files'):
+        
+        for file in resources.files('gbgrip.simul_files').iterdir():
+            if file.name.startswith('__'):
+                continue
+            target = Path(dir_calcs, f"{dir_calcs}_{pid+1}", file.name)
+            shutil.copy(file, target)
+
+    else:
+        # Backwards compatibility for Python 3.7-3.9 (untested!)
+        for filename in resources.contents('gbgrip.simul_files'):
+            file = resources.path('gbgrip.simul_files', filename)
+            target = Path(dir_calcs, f"{dir_calcs}_{pid+1}", filename)
+            shutil.copy(file, target)
+    
     time.sleep(2)
 
 
