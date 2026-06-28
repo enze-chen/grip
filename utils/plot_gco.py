@@ -1,11 +1,13 @@
+import os 
 import argparse
 import numpy as np
+import pandas as pd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from ase.io.lammpsrun import read_lammps_dump
 from ase.visualize.plot import plot_atoms
 
-from unique import clear_best, process_output
+from unique import clear_best
 
 #############################################################################
 
@@ -25,12 +27,12 @@ def make_plot(dir_best: str = "best", Emax: float = 0.0, hide: bool = False) -> 
     Returns:
         None, but a Pyplot might be displayed.
     """
-    file_list, ngb_list, Egb_list = process_output(dir_best)[:3]
-    Egbmaxmin = max([min(Egb_list[ngb_list==n]) for n in set(ngb_list)])
+    df = pd.read_csv(os.path.join(dir_best, "best_grip_data.csv"))
+    Egbmaxmin = max([min(df["Egb"][df["n"]==n]) for n in set(df["n"])])
 
     plt.rcParams.update({"font.size":12})
     fig, ax = plt.subplots(layout="constrained")
-    ax.plot(ngb_list, Egb_list, 'o', c='k', ms=3, clip_on=True)
+    ax.plot(df["n"], df["Egb"], 'o', c='k', ms=3, clip_on=True)
     ymin = ax.get_ylim()[0]
     ymax = Emax if Emax else Egbmaxmin + 0.2 * (Egbmaxmin - ymin)
     ax.set(xlim=(0, 1),

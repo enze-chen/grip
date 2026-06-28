@@ -4,8 +4,8 @@
 
 # Parameters for the sampling algorithm
 algo:
-    dir_struct: 'best'      # Folder to store all output structures, which is periodically cleaned.
-    dir_calcs: 'calc_procs' # Folder to store temporary calculation files for each iteration per core.
+    dir_struct: 'best'      # Folder to store best structures.
+    dir_calcs: 'calc_procs' # Folder to store temporary calculation files.
     ngrid: 100              # Number of grid points in each dim = ngrid * nprocs to sample for dx, dy.
     frac_min: 0.00          # Minimum fraction of atoms on a plane (0 <= [n] <= 1).
     frac_max: 1.00          # Maximum fraction of atoms on a plane. Set both to 1.0 for gamma surface.
@@ -34,8 +34,8 @@ algo:
     lammps_bin: '/g/g16/chen120/bin/lammps_serial'     # Absolute path to [serial] LAMMPS binary or shell command.
     Emult: 2                # Maximum energy threshold * Egb_min to keep; at least 1.0.
     nruns: 0                # Number of iterations in total (on each processor). Set 0 for infinite loop.
-    clear_freq: 20          # Number of iterations before clearing duplicates. Set 0 to never clear.
-    max_files:   0          # Number of total structures to save (for limited disk space). Set 0 for no limit.
+    max_files:  20          # Max structures to keep in best/ per n per proc; worst-energy file deleted when full. Set 0 for no limit.
+    clear_freq: 30          # Number of iterations before holistic cleaning. Set 0 to never clean.
 
 
 # Parameters for the material, may be potential dependent

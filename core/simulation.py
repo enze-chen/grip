@@ -1,4 +1,5 @@
 import os
+import shutil
 from subprocess import Popen, PIPE, getstatusoutput
 
 import numpy as np
@@ -20,13 +21,15 @@ class Simulation():
 
         cfold (str): The subfolder for the current process.
 
-        Emult (float): Multiplicative factor for GB energy to save.
+        Emult (float): Multiplicative factor for GB energy to save (when max_files=0).
 
-        clear_freq (int): Number of iterations before clearing duplicates.
+        max_files_per_n (int): Maximum number of structures to keep in best_dir at any time.
 
-        max_files (int): Number of structures to save in total.
+        clear_freq (int): Number of iterations before full clean.
 
-        counter (int): Counter for tracking when to clear duplicates.
+        counter (int): Counter for tracking number of runs.
+
+        best_index (dict): In-memory index of saved structures keyed by (Egb_str, n_str).
 
         best_Egb (float): Best GB energy value found so far.
 
@@ -91,12 +94,13 @@ class Simulation():
         else:
             self.pid = 0
         self.cfold = os.path.join(algo["dir_calcs"], f"{algo['dir_calcs']}_{self.pid + 1}")
-        self.Emult = algo["Emult"]   # for saving later
+        self.best_dir = algo["dir_struct"]
+        self.Emult = algo["Emult"]
         self.counter = 0
-        self.best_Egb = 1000
         self.nruns = algo["nruns"]
+        self.max_files = algo["max_files_per_n"]
         self.clear_freq = algo["clear_freq"]
-        self.max_files = algo["max_files"]
+        self._init_index()
 
         self.lmp = algo["lammps_bin"]
         self.md_run = algo["MD_run"]
@@ -117,6 +121,39 @@ class Simulation():
         self.md_coeff = struct["pair_coeff"]
         self.Ecoh = struct["Ecoh"]
         self.mass = struct["mass"]   # keep in separate data file?
+
+
+    def _init_index(self) -> None:
+        """Build in-memory index of saved structures from best_dir at startup."""
+        self.best_index = {}
+        self.best_Egb = 1000
+        if not os.path.isdir(self.best_dir):
+            return
+        for fname in os.listdir(self.best_dir):
+            if not fname.startswith('lammps_'):
+                continue
+            try:
+                parts = fname.split('_')
+                Egb_str, n_str = parts[1], parts[2]
+                dx, dy = float(parts[3]), float(parts[4])
+                rx, ry = int(parts[5]), int(parts[6])
+            except (IndexError, ValueError):
+                continue
+            Egb = float(Egb_str)
+            key = (Egb_str, n_str)
+            rx_ry = rx * ry
+            dist2 = dx**2 + dy**2
+            existing = self.best_index.get(key)
+            if existing is None or rx_ry < existing['rx_ry'] or \
+               (rx_ry == existing['rx_ry'] and dist2 < existing['dist2']):
+                self.best_index[key] = {'rx_ry': rx_ry, 'dist2':dist2, 'fname':fname, 'Egb':Egb}
+            if Egb < self.best_Egb:
+                self.best_Egb = Egb
+
+
+    def copy_to_best(self, fname: str) -> None:
+        src = os.path.join(self.cfold, self.fname_final)
+        shutil.copy2(src, os.path.join(self.best_dir, fname))
 
 
     def sample_params(self, rng: np.random.Generator) -> None:
@@ -287,53 +324,66 @@ class Simulation():
                 f.write(f"{i+1} {idx+1} {p[i,0]} {p[i,1]} {p[i,2]} 0.0\n")
 
 
-    def store_best_structs(self, system: Bicrystal, best_dir: str = "best") -> None:
+    def store_best_structs(self, system:Bicrystal) -> None:
         """
-        Store the best structures from the simulations.
+        Store the best structures from the simulations with immediate deduplication.
 
         Args:
             system (Bicrystal): Bicrystal object with GB.
 
-            best_dir (str, optional): Directory to save structures to.
-            Defaults to "best."
-
         Returns:
             None
         """
-        if system.Egb < self.best_Egb * self.Emult:
-            if system.Egb < self.best_Egb:
-                self.best_Egb = system.Egb
+        Egb = system.Egb
+        n = system.n
+        dx, dy = system.dxyz[0], system.dxyz[1]
+        rx, ry = system.rxyz[0], system.rxyz[1]
 
-            # Custom file name to differentiate results
-            fname2best = f"lammps_{system.Egb:.3f}_{system.n:.3f}_" + \
-                         f"{system.dxyz[0]:.2f}_{system.dxyz[1]:.2f}_" + \
-                         f"{system.rxyz[0]:d}_{system.rxyz[1]:d}_" + \
-                         f"{self.md_T:d}_{self.md_steps:d}"
+        Egb_str = f"{Egb:.3f}"
+        n_str = f"{n:.3f}"
+        key = (Egb_str, n_str)
+        rx_ry = rx * ry
+        dist2 = dx**2 + dy**2
+        fname = (f"lammps_{Egb_str}_{n_str}_"
+                 f"{dx:.2f}_{dy:.2f}_{rx:d}_{ry:d}_{self.md_T:d}_{self.md_steps:d}")
 
-            if os.name == 'nt':
-                ccommand = "copy"
-            else:
-                ccommand = "cp"
-            os.system(f"{ccommand} {os.path.join(self.cfold, self.fname_final)} " + \
-                      f"{os.path.join(best_dir, fname2best)}")
+        # duplicate: same (Egb, n) already saved - keep the simpler supercell
+        if key in self.best_index:
+            existing = self.best_index[key]
+            if rx_ry < existing['rx_ry'] or (rx_ry == existing['rx_ry'] and dist2 < existing['dist2']):
+                try:
+                    os.remove(os.path.join(self.best_dir, existing['fname']))
+                except FileNotFoundError:
+                    pass 
+                self.copy_to_best(fname)
+                self.best_index[key] = {'rx_ry': rx_ry, 'dist2': dist2, 'fname':fname, 'Egb':Egb}
+                if Egb < self.best_Egb:
+                    self.best_Egb = Egb
+            return 
 
-            # Periodically remove duplicate structures
-            if self.clear_freq and self.counter % self.clear_freq == 0:
-                # likely way too many to be useful
-                if len(os.listdir(best_dir)) > 5000:
-                    print(f"Clearing highest energy from {best_dir} now\n")
-                    clear_best(best_dir, extra=True, alpha=0.5)
-                # routine clearing
-                else:
-                    print(f"Clearing {best_dir} now\n")
-                    clear_best(best_dir)
+        # New structure
+        if not self.max_files and Egb >= self.best_Egb * self.Emult:
+            return 
 
-                # exceeds user threshold
-                if self.max_files and len(os.listdir(best_dir)) > self.max_files:
-                    files = sorted([x for x in os.listdir(best_dir) if x.startswith('lammps_')],
-                                    key=lambda x: float(x.split('_')[1]))
-                    for ff in files[self.max_files:]:
-                        try:
-                            os.remove(os.path.join(best_dir, ff))
-                        except FileNotFoundError:
-                            pass
+        # If at capacity, evict the worst file only if the new structure is better
+        same_n_keys = [x for x in self.best_index if x[1] == n_str]
+        if self.max_files and len(same_n_keys) >= self.max_files:
+            worst_key = max(same_n_keys, key=lambda k: self.best_index[k]['Egb'])
+            worst = self.best_index[worst_key]
+            if Egb >= worst['Egb']:
+                return
+            try:
+                os.remove(os.path.join(self.best_dir, worst['fname']))
+            except FileNotFoundError:
+                pass
+            del self.best_index[worst_key]
+
+
+        self.copy_to_best(fname)
+        self.best_index[key] = {'rx_ry': rx_ry, 'dist2':dist2, 'fname':fname, 'Egb':Egb}
+        if Egb < self.best_Egb:
+            self.best_Egb = Egb
+
+        if self.clear_freq and self.counter % self.clear_freq == 0:
+            clear_best(self.best_dir)
+

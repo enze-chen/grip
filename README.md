@@ -2,7 +2,7 @@
 
 _Authors: [Enze Chen](https://enze-chen.github.io/) (Stanford University) and
 [Timofey Frolov](https://people.llnl.gov/frolov2) (Lawrence Livermore National Laboratory)_     
-_Version: 0.2026.04.12_
+_Version: 0.2026.06.28_
 
 An algorithm for performing grand canonical optimization (GCO) of interfacial
 structure (e.g., grain boundaries) in crystalline materials.
@@ -67,8 +67,8 @@ Note that GRIP can use multiple cores, but only those on a single node (for now)
 `lammps_Egb_n_X-SHIFT_Y-SHIFT_X-REPS_Y-REPS_TEMP_STEPS`
 
 
-Duplicate files are periodically deleted by calling `clear_best()` in `utils/unique.py`.
-The default method cleans about 1-3% of files on average.
+Duplicate files are automatically discarded and only `max_files` lowest-energy structures are kept (per n per processor).
+Files can also be manually deleted by calling `clear_best()` in `utils/unique.py`.
 Use the `-e` flag for more aggressive cleaning (>50%).
 Use the `-s` flag to save the processed results to CSV from a pandas DataFrame.
 
@@ -91,7 +91,7 @@ Adding the `--file` flag with a filename will visualize the structure down the y
 - [ ] Extend the compositional DOF to work with multi-component systems.
 - [ ] Add in Bayesian optimization to narrow down simulation parameters.
 - [ ] Incorporate ways to identify the GB atoms on the fly.
-- [ ] Optimize the saving of files to reduce the memory footprint (sometimes > 1 GB).
+- [X] Optimize the saving of files to reduce the memory footprint (sometimes > 1 GB).
 - [ ] Improve the error handling if LAMMPS crashes (and resubmit?)
 
 

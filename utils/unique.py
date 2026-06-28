@@ -9,43 +9,44 @@ import pandas as pd
 
 #############################################################################
 
-def process_output(dir_best: str = 'best') -> Tuple[list, ndarray, ndarray]:
+def parse_best_filename(fname: str):
     """
-    Process the output files and get the Egb and n values.
+    Expected filename format: lammps_<Egb>_<n>_<dx>_<dy>_<rx>_<ry>_<T>_<steps>
 
-    Args:
-        dir_best (str, optional): Folder to save structures in.
-        Defaults to 'best'.
-
-    Returns:
-        The list of file names and NumPy arrays for the GB energy and n.
+    Returns dict of parsed values or None if it doesn't match.
     """
-    file_list = sorted([x for x in os.listdir(dir_best) if x.startswith('lammps_')])
-    Egb_list, ngb_list, dx_list, dy_list = [], [], [], []
-    rx_list, ry_list, T_list, steps_list = [], [], [], []
+    if not fname.startswith("lammps_"):
+        return None
 
-    print(f"Found {len(file_list)} files.")
+    parts = fname.split("_")
+    if len(parts) < 9:
+        return None
 
-    for f in file_list:
-        features = f.split('_')
-        Egb_list.append(float(features[1]))
-        ngb_list.append(float(features[2]))
-        dx_list.append(float(features[3]))
-        dy_list.append(float(features[4]))
-        rx_list.append(int(features[5]))
-        ry_list.append(int(features[6]))
-        T_list.append(int(features[7]))
-        steps_list.append(int(features[8]))
+    try:
+        return {"Egb": float(parts[1]), "n": float(parts[2]),
+                "dx": float(parts[3]), "dy": float(parts[4]), 
+                "rx": int(parts[5]), "ry": int(parts[6]),
+                "T": int(parts[7]), "steps": int(parts[8]),
+                "f": fname}
+    except ValueError:
+        return None
 
-    return file_list, np.array(ngb_list), np.array(Egb_list), \
-           np.array(dx_list), np.array(dy_list), np.array(rx_list), np.array(ry_list), \
-           np.array(T_list), np.array(steps_list)
+
+def remove(dir_path: str, filenames):
+    removed = 0
+    for fn in filenames:
+        try:
+            os.remove(os.path.join(dir_path, fn))
+            removed += 1
+        except FileNotFoundError:
+            pass
+    return removed
 
 
 def clear_best(dir_best: str = 'best', extra: bool = False, thresh: float = 0.003,
-               alpha: float = 0.25, save: bool = False) -> None:
+               alpha: float = 0.25, save: bool = False) -> pd.DataFrame:
     """
-    Periodically remove duplicate structures that are saved.
+    Remove duplicate structures saved in dir_best.
 
     Args:
         dir_best (str, optional): Folder that structures are saved in.
@@ -67,53 +68,106 @@ def clear_best(dir_best: str = 'best', extra: bool = False, thresh: float = 0.00
         None
     """
     # First filter by unique Egb and n, minimizing replications and translations
-    file_list = sorted([x for x in os.listdir(dir_best) if x.startswith('lammps_')])
-    print(f"Found {len(file_list)} files.")
+    all_files = sorted(os.listdir(dir_best))
+    rows = []
+    for fn in all_files:
+        r = parse_best_filename(fn)
+        if r is not None:
+            rows.append(r)
 
-    unique_dir = {}
-    for fx in file_list:
-        features = fx.split('_')
-        Egb = features[1]
-        ngb = features[2]
-        dx = float(features[3])
-        dy = float(features[4])
-        rx = int(features[5])
-        ry = int(features[6])
+    df = pd.DataFrame(rows)
+    print(f"Found {len(df)} parsable LAMMPS files.")
 
-        # Create keys for filtering unique structures
-        key1 = f"{Egb}_{ngb}"
-        key2 = rx * ry
-        key3 = dx**2 + dy**2
+    if df.empty:
+        return df
 
-        if key1 not in unique_dir.keys():
-            unique_dir[key1] = [key2, key3, fx]
-        else:
-            key2_old, key3_old = unique_dir[key1][0:2]
-            if key2 < key2_old:
-                unique_dir[key1] = [key2, key3_old, fx]
-            elif (key2 == key2_old) and (key3 < key3_old):
-                unique_dir[key1] = [key2, key3, fx]
+    df["area"] = df["rx"] * df["ry"]
+    df["shift2"] = df["dx"] ** 2 + df["dy"] ** 2
 
-    unique_files = []
-    for k,v in unique_dir.items():
-        unique_files.append(v[-1])
+    # Stage 1 removal of duplicates
+    df_sorted = df.sort_values(["Egb", "n", "area", "shift2"], ascending=True)
+    keep_1 = (df_sorted.groupby(["Egb", "n"], as_index=False).head(1)["f"].tolist())
 
-    # Determine which files are redundant then delete them
-    files_to_delete = set(file_list) - set(unique_files)
-    print(f"Removing {len(files_to_delete)} files.")
-    for d in files_to_delete:
-        try:
-            os.remove(os.path.join(dir_best, d))
-        except FileNotFoundError:
-            pass
+    delete_1 = set(df["f"]) - set(keep_1)
+    print(f"Stage 1 removing {len(delete_1)} duplicates.")
+    remove(dir_best, delete_1)
 
-    # Put lists into a pandas DataFrame
-    lists = process_output(dir_best)
-    file_list, ngb_list, Egb_list = lists[:3]
-    df = pd.DataFrame({'n':ngb_list, 'Egb':Egb_list, 'dx':lists[3], 'dy':lists[4],
-                       'rx':lists[5], 'ry':lists[6], 'T':lists[7], 'steps':lists[8],
-                       'f':file_list})
+    keep_1_set = set(keep_1)
+    df["exists_after_1"] = df["f"].isin(keep_1_set)
 
+    if not extra:
+        out = df[df["exists_after_1"]].copy()
+        out = out.sort_values("Egb")
+        if save:
+            out.to_csv(os.path.join(dir_best, "best_grip_data.csv"), index=False)
+        return out
+
+    # Stage 2: If specified, then further remove files with high energy
+    df2 = df[df["exists_after_1"]].copy()
+    
+    Emin_global = df2["Egb"].min()
+    per_n_min = df2.groupby("n")["Egb"].min()
+    Egbmaxmin = per_n_min.max()
+
+
+    max_thresh = Egbmaxmin + alpha * (Egbmaxmin - Emin_global)
+    print(f"Stage 2 max threshold: {max_thresh}")
+
+    to_delete = set(df2.loc[df2["Egb"] > max_thresh, "f"].tolist())
+
+
+    for name,group in df.groupby("n"):
+        group = group.sort_values('Egb').copy()
+        Emin0 = float(group['Egb'].min())
+        Emax0 = float(min(max_thresh, group['Egb'].max()))
+        min_thresh = alpha * (Emax0 - Emin0)
+
+        Emin = Emin0
+        for ind,row in group.iterrows():
+            Ecurr = float(row['Egb'])
+            if Ecurr > Emin0 + min_thresh and Emin < Ecurr <= Emin + thresh:
+                to_delete.add(row['f'])
+            else:
+                Emin = Ecurr
+
+    print(f"Stage 2 removing {len(to_delete)} files.")
+    remove(dir_best, to_delete)
+
+    keep_2 = set(df2["f"]) - set(to_delete)
+    out = df2[df2["f"].isin(keep_2)].copy()
+    out = out.sort_values("Egb")
+    if save:
+        out.to_csv(os.path.join(dir_best, "best_grip_data.csv"), index=False)
+
+    return out 
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Clean up files from GRIP.")
+    parser.add_argument("-f", "--folder", type=str, default="best",
+                        help="Folder where GB structs are stored.")
+    parser.add_argument("-e", "--extra", action="store_true",
+                        help="Remove additional higher energy structs.")
+    parser.add_argument("-t", "--thresh", type=float, default=0.003,
+                        help="Egb difference to remove.")
+    parser.add_argument("--alpha", type=float, default=0.25,
+                        help="Fraction of Emax to set thresholds.")
+    parser.add_argument("-s", "--save", action="store_true",
+                        help="Save results to CSV.")
+    args = parser.parse_args()
+    dir_best = args.folder
+    extra = args.extra
+    thresh = args.thresh
+    alpha = args.alpha
+    save = args.save
+
+    df = clear_best(dir_best, extra, thresh, alpha, save)
+    print(df.head(15))
+
+
+
+
+"""
     # If specified, then further remove files with high energy
     if extra:
         # remove files with really high energy
@@ -149,29 +203,4 @@ def clear_best(dir_best: str = 'best', extra: bool = False, thresh: float = 0.00
     df.sort_values('Egb', inplace=True)
     if save:
         df.to_csv(f"{dir_best}/best_grip_data.csv", index=False)
-
-    return df
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Clean up files from GRIP.")
-    parser.add_argument("-f", "--folder", type=str, default="best",
-                        help="Folder where GB structs are stored.")
-    parser.add_argument("-e", "--extra", action="store_true",
-                        help="Remove additional higher energy structs.")
-    parser.add_argument("-t", "--thresh", type=float, default=0.003,
-                        help="Egb difference to remove.")
-    parser.add_argument("--alpha", type=float, default=0.25,
-                        help="Fraction of Emax to set thresholds.")
-    parser.add_argument("-s", "--save", action="store_true",
-                        help="Save results to CSV.")
-    args = parser.parse_args()
-    dir_best = args.folder
-    extra = args.extra
-    thresh = args.thresh
-    alpha = args.alpha
-    save = args.save
-
-    df = clear_best(dir_best, extra, thresh, alpha, save)
-    print(df.head(15))
-
+"""
