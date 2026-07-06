@@ -34,7 +34,7 @@ algo:
     lammps_bin: '/g/g16/chen120/bin/lammps_serial'     # Absolute path to [serial] LAMMPS binary or shell command.
     Emult: 2                # Maximum energy threshold * Egb_min to keep; at least 1.0.
     nruns: 0                # Number of iterations in total (on each processor). Set 0 for infinite loop.
-    max_files:  20          # Max structures to keep in best/ per n per proc; worst-energy file deleted when full. Set 0 for no limit.
+    max_files:  15          # Max structures to keep in best/ per n per proc; worst-energy file deleted when full. Set 0 for no limit.
     clear_freq: 30          # Number of iterations before holistic cleaning. Set 0 to never clean.
 
 
